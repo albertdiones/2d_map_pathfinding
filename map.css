@@ -1,0 +1,79 @@
+
+:root {
+    --hex-size: 20px;  /* Base width of a hexagon */
+    --hex-height: calc(var(--hex-size) * 1.1547); /* Height = width * sqrt(3)/2 */
+    --row-height: calc(var(--hex-height) * 0.87); /* 75% of height (staggered rows) */
+    --row-offset: calc(var(--hex-size) / 2); /* Half of width for staggered rows */
+    --border-width: 1px; /* Border thickness */
+}
+
+div.row {
+    display: flex;
+    width: 1000%;
+    height: var(--row-height); /* Auto-calculated row height */
+}
+
+.tile {
+    width: var(--hex-size);
+    height: var(--hex-size);
+    position: relative;
+    background-color: #99cc99;
+    border: var(--border-width) solid transparent;
+    border:1px solid rgba(200, 200, 200, 0.3);
+    font-size:6px;
+    font-family:verdana;
+    color:rgba(255,255,255,0.2);
+}
+
+.tile[data-passable="false"] {
+    background-color:rgba(90,90,90,1);
+}
+
+
+#map.hexagon .tile {
+    width: var(--hex-size);
+    height: var(--hex-height);
+    position: relative;
+    clip-path: polygon(
+        50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%
+    );
+    background-color: #99cc99;
+    border: var(--border-width) solid transparent;
+}
+#map.hexagon .row:nth-child(even) {
+    margin-left: var(--row-offset);
+}
+
+/* Fix vertical gaps */
+#map.hexagon .row:not(:first-child) {
+    margin-top: calc(-1 * (var(--hex-height) - var(--row-height)));
+}
+
+/* Adjust textarea styling */
+textarea#map_json {
+    width: 100%;
+    height: 400px;
+}
+
+#map div.tile.highlight {    
+    color:rgba(0,0,0,0.9);
+}
+
+#map div.tile.highlight::after {
+    content: "";
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 0, 0.2);
+    pointer-events: none; /* Prevents interference with clicks */
+}
+
+#map div.tile .tile-dot {
+    width:1px;
+    height:1px; 
+    font-size:3px;
+    color:rgba(255,0,0,0.7);
+    position:absolute;
+}
