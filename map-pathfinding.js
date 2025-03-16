@@ -16,7 +16,9 @@ function findNextCoords(
 
         const passableAdjacentTiles = adjacentTiles.filter(
             coords => options.isPassable(...coords) 
-            && isAdjacent(coords, currentCoords)
+            && isAdjacent(currentCoords, coords)
+        ).map(
+            coords => coords.map( j => j+0.5 ) // tile center
         );
         
         const adjacentTile = passableAdjacentTiles.reduce(
@@ -43,7 +45,7 @@ function findNextCoords(
                 return current;
             },
         );
-        return adjacentTile.map(i => i + 0.5);   
+        return adjacentTile;   
     }
     else {
         return trigoCoords;
@@ -66,9 +68,11 @@ function getAdjacentTiles(x, y) {
     }
     return adjacentTiles;
 }
+
 function getDistance(x1,y1,x2,y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
+
 function findTrigoNextCoords(origin, current, destination) {
     const angle = getCoordsAngle(origin, destination);
 
@@ -163,13 +167,47 @@ function isAdjacent(coords1, coords2) {
     const rX1 = coords1[0] % 1;
     const rY1 = coords1[1] % 1;
 
+    const coords1Tile = coords1.map( i => Math.floor(i));
+    const coords2Tile = coords2.map( i => Math.floor(i));
+
+
+
+    if (rX1 === 0.5 && rY1 === 0.5) {
+        return isSouthEastAdjacent(coords1Tile, coords2Tile) 
+            || isNorthWestAdjacent(coords1Tile, coords2Tile)
+            || isSouthWestAdjacent(coords1Tile, coords2Tile)
+            || isNorthEastAdjacent(coords1Tile, coords2Tile);
+    }
 
     if (rX1 === rY1) {
-        const tileCoords = coords2.map( i => Math.floor(i));
-        return tileCoords.every( (i,k) => i === coords1[k] - 1 )
-            || tileCoords.every( (i,k) => i === coords1[k] + 1 )
+        return isSouthEastAdjacent(coords1Tile, coords2Tile) 
+            || isNorthWestAdjacent(coords1Tile, coords2Tile)
+    }
+    if ((1-rX1) === rY1) {
+        return isSouthWestAdjacent(coords1Tile, coords2Tile)
+        || isNorthEastAdjacent(coords1Tile, coords2Tile);
     }
     return false;
+}
+
+function isSouthEastAdjacent(coords1, coords2) {
+    return coords2.every( (i,k) => i === coords1[k] + 1 )
+}
+
+function isNorthWestAdjacent(coords1, coords2) {
+    return coords2.every( (i,k) => i === coords1[k] - 1 );
+}
+
+function isNorthEastAdjacent(coords1, coords2) {
+    return coords2[0] === Math.floor(coords1[0]) + 1
+        && coords2[1] === Math.floor(coords1[1]) - 1;
+}
+
+function isSouthWestAdjacent(coords1, coords2) {
+    return (
+        coords2[0] === coords1[0] - 1
+        && coords2[1] === coords1[1] + 1
+    );
 }
 
 
