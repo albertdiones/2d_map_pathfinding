@@ -1,10 +1,3 @@
-function highlightTile(element) {
-    if (element.classList.contains('highlight')) {
-        throw `Already highlghted ${element.getAttribute('data-x')}, ${element.getAttribute('data-y')}`;
-    }
-    element.classList.add('highlight');
-}
-
 function getTile(x, y) {
     const tileX = Math.floor(x);
     const tileY = Math.floor(y);

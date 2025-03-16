@@ -16,7 +16,7 @@ function findNextCoords(
 
         const passableAdjacentTiles = adjacentTiles.filter(
             coords => options.isPassable(...coords) 
-            && isAdjacentXy(coords, currentCoords)
+            && isAdjacent(coords, currentCoords)
         );
         
         const adjacentTile = passableAdjacentTiles.reduce(
@@ -134,6 +134,7 @@ function isDirectionSimilar(direction1, direction2) {
      && direction1.includes(direction2[1]);
 }
 
+// cross pattern only (up down left right)
 function isAdjacentXy(coords1, coords2) {
     const [x1, y1] = coords1.map(i => Math.floor(i));
     const [x2, y2] = coords2.map(i => Math.floor(i));
@@ -149,6 +150,28 @@ function isAdjacentXy(coords1, coords2) {
     }
     return (xLeg + yLeg) == 1;
 }
+
+
+// including the adjacent diagonal
+function isAdjacent(coords1, coords2) {
+    if (isAdjacentXy(coords1, coords2)) {
+        return true;
+    }
+
+    // you will know if it's a perfect diagonal 
+    // if these remainders are exact equal
+    const rX1 = coords1[0] % 1;
+    const rY1 = coords1[1] % 1;
+
+
+    if (rX1 === rY1) {
+        const tileCoords = coords2.map( i => Math.floor(i));
+        return tileCoords.every( (i,k) => i === coords1[k] - 1 )
+            || tileCoords.every( (i,k) => i === coords1[k] + 1 )
+    }
+    return false;
+}
+
 
 function distance(coords2, coords1) {
     const [x1, y1] = coords1;
