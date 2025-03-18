@@ -77,4 +77,5 @@ textarea#map_json {
     color:rgba(255,0,0,0.7);
     position:absolute;
     z-index:9999;
+    line-height: 3px;
 }

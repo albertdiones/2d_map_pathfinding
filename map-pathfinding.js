@@ -479,7 +479,7 @@ function placeDot(coords, markerText) {
     const tile = getTile(...coords);
     const x = coords[0] % 1;
     const y = coords[1] % 1;
-    tile.innerHTML += `<div class="tile-dot" style="top: ${y*100}%; left: ${x*100}%">${markerText ?? '-'}</div>`;
+    tile.innerHTML += `<div class="tile-dot" style="top: calc(${y*100}% - 1.5px); left: calc(${x*100}% - 1.5px)">${markerText ?? '-'}</div>`;
 }
 
 function clearAllHighlights() {
