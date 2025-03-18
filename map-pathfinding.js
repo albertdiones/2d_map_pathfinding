@@ -21,11 +21,21 @@ function findNextCoords(
     const trigoCoords = findTrigoNextCoords(originCoords, currentCoords, toCoords);
 
     if (!options.isPassable(...trigoCoords)) {
+        // if not centered, go to center first
+
+        // isCentered() ?
+        if (currentCoords[0] % 1 !== 0.5
+            || currentCoords[1] % 1 !== 0.5
+        ) {
+            // centerOfTile(currentCoords)
+            return [
+                Math.floor(currentCoords[0]) + 0.5,
+                Math.floor(currentCoords[1]) + 0.5
+            ];
+        }
         return pickAdjacentTile(currentCoords, toCoords, options);
     }
-    else {
-        return trigoCoords;
-    }
+    return trigoCoords;
 }
 
 function pickAdjacentTile(
