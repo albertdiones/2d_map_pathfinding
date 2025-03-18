@@ -37,13 +37,13 @@ function findNextCoords(
 
         // overshoot/bias system
         if (direction.includes(NORTH)) {
-            y = Math.floor(y) + 0;
+            y = Math.floor(y) + 0.00001;
         }
         if (direction.includes(SOUTH)) {
             y = Math.floor(y) + 0.99999;
         }
         if (direction.includes(WEST)) {
-            x = Math.floor(x) + 0;
+            x = Math.floor(x) + 0.00001;
         }
         if (direction.includes(EAST)) {
             x = Math.floor(x) + 0.99999;
@@ -462,7 +462,7 @@ function showPath(fromElement, toElement, isPassable) {
                 placeDot(currentToPlaceDot, DotToPlace);
                 highlightTile(tileToHighlight);
             })(tile, current, (i + 1) + ""),
-            i * 500
+            i * 1000
             )
         );
 
