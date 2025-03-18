@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <script>
+
+            const mapWidth = 10;
+            const mapHeight = 10;
+
+            const customMap =[
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"water","passable": false},{"type":"water","passable": false},{"type":"water","passable": false},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ],
+            [
+              {"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"},{"type":"plain"}
+            ]
+          ];          
+           const blankMap = Array.from({ length: mapHeight }, () => 
+                Array.from({ length: mapWidth }, () => ({ type: 'plain' }))
+            );
+
+            const map = blankMap.map((row, rowIndex) => 
+                customMap[rowIndex] ? customMap[rowIndex] : row);
+
+
+            function serializeMapJson() {
+                const rows = document.getElementById('map').querySelectorAll('.row');
+
+                const tiles = [...rows].map(
+                    (row) => [...row.querySelectorAll('.tile')].map(
+                        (tile) => ({
+                            type: tile.getAttribute('data-type')
+                        })
+                    )
+                );
+
+                document.getElementById('map_json').value = `[\n${tiles.map( row => JSON.stringify(row)).join(",\n")}]`;
+            }
+        </script>
+        <script src="map.js"></script>
+        <script src="map-pathfinding.js"></script>
+        <link rel="stylesheet" href="map.css" />
+        <script>
+            function isCoordsPassable(x,y) {
+                const tile = getTile(x, y);
+                if (tile.getAttribute('data-passable') === 'true') {
+                    return true;
+                }
+                if (tile.getAttribute('data-passable') === 'false') {
+                    return false;
+                }
+                if (tile.getAttribute('data-type') === 'water') {
+                    return false;
+                }
+                return true;
+            }
+            function highlightTile(element) {
+                element.classList.add('highlight');
+            }
+        </script>
+    </head>
+    <body>
+        <div class="path-count">0</div>
+        <div id="map">
+        </div>
+        <script>
+            renderMap(
+              map,
+              { 
+                renderExtraAttributes: (tile, x, y) => {
+                  return ' onMouseUp="togglePath(this, isCoordsPassable);" '; 
+                }
+              }
+            );
+        </script>
+    </body>
+</html>

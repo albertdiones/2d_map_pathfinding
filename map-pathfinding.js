@@ -9,47 +9,59 @@ function findNextCoords(
     originCoords,
     options = {isPassable: () => true}
 ) {
+
+
+    // if same tile, go directly to the destination
+
     const trigoCoords = findTrigoNextCoords(originCoords, currentCoords, toCoords);
 
     if (!options.isPassable(...trigoCoords)) {
-        const adjacentTiles = getAdjacentTiles(...currentCoords.map(i => Math.floor(i)));
-
-        const passableAdjacentTiles = adjacentTiles.filter(
-            coords => options.isPassable(...coords) 
-            && isAdjacent(currentCoords, coords)
-        ).map(
-            coords => coords.map( j => j+0.5 ) // tile center
-        );
-        
-        const adjacentTile = passableAdjacentTiles.reduce(
-            (previous, current, index) => {
-                const previousDistance = getDistance(
-                    ...[
-                        ...previous,
-                        toCoords[0],
-                        toCoords[1]
-                    ]
-                );
-                const currentDistance = getDistance(
-                    ...[
-                        ...current, 
-                        toCoords[0],
-                        toCoords[1]
-                    ]
-                );
-
-
-                if (previousDistance < currentDistance) {
-                    return previous;
-                }
-                return current;
-            },
-        );
-        return adjacentTile;   
+        return pickAdjacentTile(currentCoords, toCoords, options);
     }
     else {
         return trigoCoords;
     }
+}
+
+function pickAdjacentTile(
+    currentCoords, 
+    toCoords,
+    options = {isPassable}
+) {
+    const adjacentTiles = getAdjacentTiles(...currentCoords.map(i => Math.floor(i)));
+
+    const passableAdjacentTiles = adjacentTiles.filter(
+        coords => options.isPassable(...coords) 
+        && isAdjacent(currentCoords, coords)
+    ).map(
+        coords => coords.map( j => j+0.5 ) // tile center
+    );
+    
+    const adjacentTile = passableAdjacentTiles.reduce(
+        (previous, current, index) => {
+            const previousDistance = getDistance(
+                ...[
+                    ...previous,
+                    toCoords[0],
+                    toCoords[1]
+                ]
+            );
+            const currentDistance = getDistance(
+                ...[
+                    ...current, 
+                    toCoords[0],
+                    toCoords[1]
+                ]
+            );
+
+
+            if (previousDistance < currentDistance) {
+                return previous;
+            }
+            return current;
+        },
+    );
+    return adjacentTile;   
 }
 
 
