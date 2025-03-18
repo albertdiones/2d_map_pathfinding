@@ -11,7 +11,12 @@ function findNextCoords(
 ) {
 
 
-    // if same tile, go directly to the destination
+    if (
+        Math.floor(currentCoords[0]) === Math.floor(toCoords[0])
+        && Math.floor(currentCoords[1]) === Math.floor(toCoords[1])
+    ) {
+        return toCoords;
+    }
 
     const trigoCoords = findTrigoNextCoords(originCoords, currentCoords, toCoords);
 
@@ -305,7 +310,7 @@ function getDirection(angle) {
 }
 
 function arrived(current, to) {
-    return Math.floor(current[0]) === to[0] && Math.floor(current[1]) === to[1];
+    return current[0] === to[0] && current[1] === to[1];
 }
 
 function deg2Rad(angleDegrees) {
