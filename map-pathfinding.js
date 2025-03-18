@@ -33,7 +33,27 @@ function findNextCoords(
                 Math.floor(currentCoords[1]) + 0.5
             ];
         }
-        return pickAdjacentTile(currentCoords, toCoords, options);
+        const adjacent = pickAdjacentTile(currentCoords, toCoords, options);
+        let x = adjacent[0];
+        let y = adjacent[1];
+        
+        const angle = getCoordsAngle(adjacent, toCoords);
+
+        const direction = getDirection(angle);
+
+        if (direction.includes(NORTH)) {
+            y = Math.floor(y) + 0.01;
+        }
+        if (direction.includes(SOUTH)) {
+            y = Math.floor(y) + 0.99;
+        }
+        if (direction.includes(WEST)) {
+            x = Math.floor(x) + 0.01;
+        }
+        if (direction.includes(EAST)) {
+            x = Math.floor(x) + 0.99;
+        }
+        return [x,y];
     }
     return trigoCoords;
 }
