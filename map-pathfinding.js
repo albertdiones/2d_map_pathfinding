@@ -3,6 +3,8 @@ const SOUTH = 'south';
 const EAST = 'east';
 const WEST = 'west';
 
+let dotTimeoutTasks = [];
+
 function findNextCoords(
     currentCoords, 
     toCoords,
@@ -23,17 +25,30 @@ function findNextCoords(
     if (!options.isPassable(...trigoCoords)) {
         // if not centered, go to center first
 
-        // isCentered() ?
-        if (currentCoords[0] % 1 !== 0.5
-            || currentCoords[1] % 1 !== 0.5
-        ) {
-            // centerOfTile(currentCoords)
-            return [
-                Math.floor(currentCoords[0]) + 0.5,
-                Math.floor(currentCoords[1]) + 0.5
-            ];
+
+        const adjacent = pickAdjacentTile(currentCoords, toCoords, options);
+        let x = adjacent[0];
+        let y = adjacent[1];
+        
+        const angle = getCoordsAngle(currentCoords, adjacent);
+
+        const direction = getDirection(angle);
+
+
+        // overshoot/bias system
+        if (direction.includes(NORTH)) {
+            y = Math.floor(y) + 0;
         }
-        return pickAdjacentTile(currentCoords, toCoords, options);
+        if (direction.includes(SOUTH)) {
+            y = Math.floor(y) + 0.99999;
+        }
+        if (direction.includes(WEST)) {
+            x = Math.floor(x) + 0;
+        }
+        if (direction.includes(EAST)) {
+            x = Math.floor(x) + 0.99999;
+        }
+        return [x,y];
     }
     return trigoCoords;
 }
@@ -53,27 +68,47 @@ function pickAdjacentTile(
     );
     
     const adjacentTile = passableAdjacentTiles.reduce(
-        (previous, current, index) => {
-            const previousDistance = getDistance(
+        (tile1, tile2, index) => {
+            const tile1DistanceToDestination = getDistance(
                 ...[
-                    ...previous,
+                    ...tile1,
                     toCoords[0],
                     toCoords[1]
                 ]
             );
-            const currentDistance = getDistance(
+            const tile2DistanceToDestination = getDistance(
                 ...[
-                    ...current, 
+                    ...tile2, 
                     toCoords[0],
                     toCoords[1]
                 ]
             );
+            const currentToTile1 = getDistance(
+                ...[
+                    ...tile1,
+                    currentCoords[0],
+                    currentCoords[1]
+                ]
+            );
+
+            const currentToTile2 = getDistance(
+                ...[
+                    ...tile2, 
+                    currentCoords[0],
+                    currentCoords[1]
+                ]
+            );
+
+            const tile1Total = currentToTile1 + tile1DistanceToDestination;
+
+            const tile2Total = currentToTile2 + tile2DistanceToDestination;
 
 
-            if (previousDistance < currentDistance) {
-                return previous;
+            if (tile1Total < tile2Total) {
+                return tile1;
             }
-            return current;
+
+            return tile2;
         },
     );
     return adjacentTile;   
@@ -419,13 +454,22 @@ function showPath(fromElement, toElement, isPassable) {
             {isPassable: isPassable}
         );
         const tile = getTile(...current);
-        highlightTile(tile);
-        placeDot(current, (i + 1) +"");
+        
+        dotTimeoutTasks.push(
+            setTimeout(
+            (
+            (tileToHighlight, currentToPlaceDot, DotToPlace) => () => {
+                placeDot(currentToPlaceDot, DotToPlace);
+                highlightTile(tileToHighlight);
+            })(tile, current, (i + 1) + ""),
+            i * 500
+            )
+        );
 
         previous = current;
         i++;
         document.querySelector('.path-count').innerHTML = i;
-        if (i > 100) {
+        if (i > 50) {
             break;
         }
     }
@@ -444,6 +488,10 @@ function clearAllHighlights() {
     document.querySelectorAll('div.tile.highlight').forEach(
         (tile) => tile.classList.remove('highlight')
     );
+    dotTimeoutTasks.forEach(
+        (task) => clearTimeout(task)
+    );
+    dotTimeoutTasks = [];
 }
 
 function removeAllTileDots() {
