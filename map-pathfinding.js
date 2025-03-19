@@ -455,16 +455,7 @@ function showPath(fromElement, toElement, isPassable) {
         );
         const tile = getTile(...current);
         
-        dotTimeoutTasks.push(
-            setTimeout(
-            (
-            (tileToHighlight, currentToPlaceDot, DotToPlace) => () => {
-                placeDot(currentToPlaceDot, DotToPlace);
-                highlightTile(tileToHighlight);
-            })(tile, current, (i + 1) + ""),
-            i * 1000
-            )
-        );
+        animateHighlightTile(tile, {current: current, i: i})
 
         previous = current;
         i++;

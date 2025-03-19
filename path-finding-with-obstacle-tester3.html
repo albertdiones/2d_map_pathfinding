@@ -76,6 +76,27 @@
                 }
                 return true;
             }
+            
+            function animateHighlightTile(element, params) {
+                const {current, i} = params;
+                const tile = element;
+                const timeout = i * (
+                    document.querySelector('input#path-animation-speed').value 
+                    ? parseInt(document.querySelector('input#path-animation-speed').value)
+                    : 0
+                );
+
+                dotTimeoutTasks.push(
+                    setTimeout(
+                        (
+                        (tileToHighlight, currentToPlaceDot, DotToPlace) => () => {
+                            placeDot(currentToPlaceDot, DotToPlace);
+                            element.classList.add('highlight');
+                        })(tile, current, (i + 1) + ""),
+                        timeout
+                    )
+                );
+            }
             function highlightTile(element) {
                 element.classList.add('highlight');
             }
@@ -83,6 +104,21 @@
     </head>
     <body>
         <div class="path-count">0</div>
+        <div>
+            <input id="path-animation-speed" type="number" />
+
+            <script>
+            const input = document.getElementById("path-animation-speed");
+            
+            // Load saved value
+            input.value = localStorage.getItem("pathAnimationSpeed") || "";
+
+            // Save on change
+            input.addEventListener("input", () => {
+                localStorage.setItem("pathAnimationSpeed", input.value);
+            });
+            </script>
+        </div>
         <div id="map">
         </div>
         <script>
