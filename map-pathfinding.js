@@ -34,28 +34,52 @@ function findNextCoords(
 
 
         const adjacentDestination = pickAdjacentTile(currentCoords, toCoords, options);
-        // overshoot/bias system
-        let x = adjacentDestination[0]; // + 0.5
-        let y = adjacentDestination[1];
         
-        const angle = getCoordsAngle(currentCoords, adjacentDestination);
+        if (Math.round(currentCoords[0]) % 2 === 1) {
+            return overshoot1(adjacentDestination, currentCoords);
+        }
 
-        const direction = getDirection(angle);
-        if (direction.includes(NORTH)) {
-            y = Math.floor(y) + 0.00001;
-        }
-        if (direction.includes(SOUTH)) {
-            y = Math.floor(y) + 0.99999;
-        }
-        if (direction.includes(WEST)) {
-            x = Math.floor(x) + 0.00001;
-        }
-        if (direction.includes(EAST)) {
-            x = Math.floor(x) + 0.99999;
-        }
-        return [x,y];
+
+        return overshoot2(adjacentDestination, trigoCoords2);
     }
     return trigoCoords;
+}
+
+function overshoot1(adjacentDestination,currentCoords) {
+    // overshoot/bias system
+    let x = adjacentDestination[0]; // + 0.5
+    let y = adjacentDestination[1];
+    
+    const angle = getCoordsAngle(currentCoords, adjacentDestination);
+
+    const direction = getDirection(angle);
+    if (direction.includes(NORTH)) {
+        y = Math.floor(y) + 0.00001;
+    }
+    if (direction.includes(SOUTH)) {
+        y = Math.floor(y) + 0.99999;
+    }
+    if (direction.includes(WEST)) {
+        x = Math.floor(x) + 0.00001;
+    }
+    if (direction.includes(EAST)) {
+        x = Math.floor(x) + 0.99999;
+    }
+    return [x,y];
+}
+
+
+function overshoot2(adjacentDestination,trigoCoords2) {
+    // overshoot/bias system
+    let x = Math.floor(adjacentDestination[0]); // + 0.5
+    let y = Math.floor(adjacentDestination[1]);
+    
+    //const angle = getCoordsAngle(currentCoords, adjacentDestination);
+
+    //const direction = getDirection(angle);
+    let xR = trigoCoords2[0] % 1;
+    let yR = trigoCoords2[1] % 1;
+    return [x+xR,y+yR];
 }
 
 function pickAdjacentTile(
