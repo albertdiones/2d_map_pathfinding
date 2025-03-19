@@ -23,27 +23,19 @@ function findNextCoords(
     const trigoCoords = findTrigoNextCoords(originCoords, currentCoords, toCoords);
 
     if (!options.isPassable(...trigoCoords)) {
-        const trigoCoords2 = findTrigoNextCoords2(originCoords, currentCoords, toCoords);
-        console.log('trigoCoords2', trigoCoords2);
-        if (currentCoords[0] !== trigoCoords2[0] 
-            && currentCoords[1] !== trigoCoords2[1] 
-            && options.isPassable(...trigoCoords2)
-        ) {
-            return trigoCoords2;
-        }
+        // if not centered, go to center first
 
 
-        const adjacentDestination = pickAdjacentTile(currentCoords, toCoords, options);
-        // overshoot/bias system
-        let x = adjacentDestination[0]; // + 0.5
-        let y = adjacentDestination[1];
+        const adjacent = pickAdjacentTile(currentCoords, toCoords, options);
+        let x = adjacent[0];
+        let y = adjacent[1];
         
-        const angle = getCoordsAngle(
-            currentCoords.map( i => Math.floor(i) + 0.5),
-            adjacentDestination
-        );
+        const angle = getCoordsAngle(currentCoords, adjacent);
 
         const direction = getDirection(angle);
+
+
+        // overshoot/bias system
         if (direction.includes(NORTH)) {
             y = Math.floor(y) + 0.00001;
         }
@@ -56,7 +48,6 @@ function findNextCoords(
         if (direction.includes(EAST)) {
             x = Math.floor(x) + 0.99999;
         }
-        console.log('direction',direction, x,y);
         return [x,y];
     }
     return trigoCoords;
@@ -173,74 +164,6 @@ function findTrigoNextCoords(origin, current, destination) {
     else if (direction.includes(SOUTH)) {
         exit2[1] = Math.floor(current[1]+1);
     }
-
-
-
-    const theta = deg2Rad(angle % 90);
-    if (isDirectionSimilar(direction, [SOUTH, EAST]) || isDirectionSimilar(direction, [NORTH,WEST])) {
-        const adjacent1 = exit1[0] - origin[0];
-        const opposite2 = exit2[1] - origin[1];
-        const opposite1 = Math.tan(theta)*adjacent1;
-        const adjacent2 = opposite2/Math.tan(theta);
-        
-        exit1[1] = origin[1] + opposite1;
-        exit2[0] = origin[0] + adjacent2;
-    }
-    // should this be else if() ?
-    else {
-        const opposite1 = exit1[0] - origin[0];
-        const adjacent2 = exit2[1] - origin[1];
-        const adjacent1 = opposite1/Math.tan(theta);
-        const opposite2 = Math.tan(theta)*adjacent2;
-        exit1[1] = origin[1] - adjacent1;
-        exit2[0] = origin[0] - opposite2;
-    }
-
-    const exit1Distance = distance(origin, exit1);
-    const exit2Distance = distance(origin, exit2);
-
-
-    return exit1Distance < exit2Distance ? exit1 : exit2;
-
-}
-
-
-function findTrigoNextCoords2(origin, current, destination) {
-    const angle = getCoordsAngle(origin, destination);
-
-    const direction = getDirection(angle);
-
-    if (direction[1] === null) {
-        return findImmediateNextCoords(current, destination);
-    }
-
-    let exit1 = [null, null];
-    let exit2 = [null, null];
-    // east
-    if ( direction.includes(EAST) ) {
-        exit1[0] = Math.floor(current[0])+0.99999;
-    }
-    // west
-    else if (direction.includes(WEST)) {
-        exit1[0] = Math.floor(current[0])-0;
-    }
-
-
-    // north
-    if (direction.includes(NORTH)) {
-        exit2[1] = Math.floor(current[1])-0;
-    }
-    // south
-    else if (direction.includes(SOUTH)) {
-        exit2[1] = Math.floor(current[1])+0.99999;
-    }
-
-    console.log(
-        'current',
-        current,
-        exit1,
-        exit2,
-    );
 
 
 
