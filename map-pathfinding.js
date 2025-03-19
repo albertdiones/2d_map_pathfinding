@@ -38,19 +38,19 @@ function findNextCoords(
         let x = adjacentDestination[0]; // + 0.5
         let y = adjacentDestination[1];
         
-        const angle = getCoordsAngle(currentCoords, adjacentDestination);
+        const angle = getCoordsAngle(currentCoords, toCoords);
 
         const direction = getDirection(angle);
-        if (direction.includes(NORTH)) {
+        if (direction.includes(SOUTH)) {
             y = Math.floor(y) + 0.00001;
         }
-        if (direction.includes(SOUTH)) {
+        if (direction.includes(NORTH)) {
             y = Math.floor(y) + 0.99999;
         }
-        if (direction.includes(WEST)) {
+        if (direction.includes(EAST)) {
             x = Math.floor(x) + 0.00001;
         }
-        if (direction.includes(EAST)) {
+        if (direction.includes(WEST)) {
             x = Math.floor(x) + 0.99999;
         }
         return [x,y];
