@@ -8,6 +8,7 @@ let dotTimeoutTasks = [];
 function findNextCoords(
     currentCoords, 
     toCoords,
+    previousCoords,
     originCoords,
     options = {isPassable: () => true}
 ) {
@@ -20,42 +21,138 @@ function findNextCoords(
         return toCoords;
     }
 
-    const trigoCoords = findTrigoNextCoords(originCoords, currentCoords, toCoords);
+    const trigoCoords = findTrigoNextCoords(previousCoords ?? originCoords, currentCoords, toCoords);
 
     if (!options.isPassable(...trigoCoords)) {
-        const trigoCoords2 = findTrigoNextCoords2(originCoords, currentCoords, toCoords);
-        console.log('trigoCoords2', trigoCoords2);
-        if (currentCoords[0] !== trigoCoords2[0] 
-            && currentCoords[1] !== trigoCoords2[1] 
-            && options.isPassable(...trigoCoords2)
-        ) {
-            return trigoCoords2;
-        }
+        // find passable edge coords
 
-
-        const adjacentDestination = pickAdjacentTile(currentCoords, toCoords, options);
-        // overshoot/bias system
-        let x = adjacentDestination[0]; // + 0.5
-        let y = adjacentDestination[1];
-        
-        const angle = getCoordsAngle(currentCoords, adjacentDestination);
-
+        const angle = getCoordsAngle(originCoords, toCoords);
         const direction = getDirection(angle);
+        const directionsToTry = [
+            direction,
+            [direction[0], null],
+            ...(direction[1] ? [[direction[1], null]] : []),
+        ];
+        
+
         if (direction.includes(NORTH)) {
-            y = Math.floor(y) + 0.00001;
+            directionsToTry.push([EAST,null]);
+            directionsToTry.push([WEST,null]);
+            directionsToTry.push([NORTH,WEST]);
+            directionsToTry.push([NORTH,EAST]);
+            directionsToTry.push([WEST,NORTH]);
+            directionsToTry.push([EAST,NORTH]);
         }
+
+
         if (direction.includes(SOUTH)) {
-            y = Math.floor(y) + 0.99999;
+            directionsToTry.push([EAST,null]);
+            directionsToTry.push([WEST,null]);
+            directionsToTry.push([SOUTH,WEST]);
+            directionsToTry.push([SOUTH,EAST]);
+            directionsToTry.push([WEST,SOUTH]);
+            directionsToTry.push([EAST,SOUTH]);
         }
-        if (direction.includes(WEST)) {
-            x = Math.floor(x) + 0.00001;
-        }
+        
+
+
         if (direction.includes(EAST)) {
-            x = Math.floor(x) + 0.99999;
+            directionsToTry.push([NORTH, null]);
+            directionsToTry.push([SOUTH, null]);
+            directionsToTry.push([EAST, NORTH]);
+            directionsToTry.push([EAST, SOUTH]);
+            directionsToTry.push([NORTH, EAST]);
+            directionsToTry.push([SOUTH, EAST]);
         }
-        return [x,y];
+        
+        if (direction.includes(WEST)) {
+            directionsToTry.push([NORTH, null]);
+            directionsToTry.push([SOUTH, null]);
+            directionsToTry.push([WEST, NORTH]);
+            directionsToTry.push([WEST, SOUTH]);
+            directionsToTry.push([NORTH, WEST]);
+            directionsToTry.push([SOUTH, WEST]);
+        }
+
+        const coordsCandidates = [];
+
+        for (const x in directionsToTry) {
+            const dir = directionsToTry[x];
+            const coords = getPassableEdgeOnDirection(
+                currentCoords,
+                dir, 
+                {isPassable: options.isPassable}
+            );
+            if (coords) {
+                console.log('scanCoords', coords, dir);
+                return coords;
+            }
+        }
+        if (!coordsCandidates.length) {
+            throw 'error!!!35353412';
+        }
     }
+    console.log('trigoCoords', trigoCoords);
     return trigoCoords;
+}
+
+function getEdgeOnDirection(currentCoords, direction) {
+
+    const passableEdgeCoords = [...currentCoords];
+
+    if (direction.includes(NORTH)) {
+        passableEdgeCoords[1] = Math.floor(currentCoords[1])  + 0.00001;
+    }
+    
+    if (direction.includes(SOUTH)) {
+        passableEdgeCoords[1] = Math.floor(currentCoords[1])  + 0.99999;
+    }                
+    
+    if (direction.includes(EAST)) {
+        passableEdgeCoords[0] = Math.floor(currentCoords[0])  + 0.99999;
+    }
+    
+    if (direction.includes(WEST)) {
+        passableEdgeCoords[0] = Math.floor(currentCoords[0])  + 0.00001;
+    }
+
+    return passableEdgeCoords;
+
+}
+
+function getEdgeonAdjacentTile(currentCoords, direction) {
+    console.log('direction', direction);
+    const currentTileEdge = getEdgeOnDirection(currentCoords, direction);
+
+    if (direction[0] === NORTH) {
+        currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
+    }
+    else if (direction[0] === SOUTH) {
+        currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.00001
+    }    
+    else if (direction[0] === EAST) {
+        currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.00001
+    }    
+    else if (direction[0] === WEST) {
+        currentTileEdge[0] = Math.floor(currentTileEdge[0]) - 1
+    }
+
+    return currentTileEdge;
+}
+
+function getPassableEdgeOnDirection(currentCoords, direction, options) {
+    const coords = getEdgeonAdjacentTile(currentCoords, direction);
+    if (!options.isPassable(...coords)) {
+        const withinTheTile = getEdgeOnDirection(currentCoords, direction);
+        if (
+            withinTheTile[0] === currentCoords[0]
+            && withinTheTile[1] === currentCoords[1]
+        ) {
+            return null;
+        }
+        return withinTheTile;
+    }
+    return coords;
 }
 
 function pickAdjacentTile(
@@ -117,6 +214,53 @@ function pickAdjacentTile(
         },
     );
     return adjacentTile;   
+}
+
+function getShortestPathToDestination(originCoords, destinationCoords, coordsCandidates) {
+    return coordsCandidates.reduce(
+        (tile1, tile2, index) => {
+            const tile1DistanceToDestination = getDistance(
+                ...[
+                    ...tile1,
+                    destinationCoords[0],
+                    destinationCoords[1]
+                ]
+            );
+            const tile2DistanceToDestination = getDistance(
+                ...[
+                    ...tile2, 
+                    destinationCoords[0],
+                    destinationCoords[1]
+                ]
+            );
+            const currentToTile1 = getDistance(
+                ...[
+                    ...tile1,
+                    originCoords[0],
+                    originCoords[1]
+                ]
+            );
+
+            const currentToTile2 = getDistance(
+                ...[
+                    ...tile2, 
+                    originCoords[0],
+                    originCoords[1]
+                ]
+            );
+
+            const tile1Total = currentToTile1 + tile1DistanceToDestination;
+
+            const tile2Total = currentToTile2 + tile2DistanceToDestination;
+
+
+            if (tile1Total < tile2Total) {
+                return tile1;
+            }
+
+            return tile2;
+        },
+    );
 }
 
 
@@ -515,7 +659,8 @@ function showPath(fromElement, toElement, isPassable) {
         current = findNextCoords(
             current,
             to,
-            previous ?? from,
+            previous,
+            from,
             {isPassable: isPassable}
         );
         const tile = getTile(...current);
