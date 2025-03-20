@@ -62,6 +62,12 @@
         <script src="map.js"></script>
         <script src="map-pathfinding.js"></script>
         <link rel="stylesheet" href="map.css" />
+        <style>
+            table td {
+                border:1px solid #333;
+                width:7em;
+            }
+        </style>
         <script>
             function isCoordsPassable(x,y) {
                 const tile = getTile(x, y);
@@ -78,13 +84,18 @@
             }
             
             function animateHighlightTile(element, params) {
-                const {current, i} = params;
+                const {current, i, comment} = params;
                 const tile = element;
                 const timeout = i * (
                     document.querySelector('input#path-animation-speed').value 
                     ? parseInt(document.querySelector('input#path-animation-speed').value)
                     : 0
                 );
+
+                const [x,y] = current;
+
+                document.querySelector('table tbody').innerHTML
+                    += `<tr><td>${i+1}</td><td>${x}</td><td>${y}</td><td>${comment}</td></tr>`;
 
                 dotTimeoutTasks.push(
                     setTimeout(
@@ -99,6 +110,26 @@
             }
             function highlightTile(element) {
                 element.classList.add('highlight');
+            }
+            function placeDot(coords, markerText) {
+                const tile = getTile(...coords);
+                const x = coords[0] % 1;
+                const y = coords[1] % 1;
+                tile.innerHTML += `<div class="tile-dot" style="top: calc(${y*100}% - 1.5px); left: calc(${x*100}% - 1.5px)" 
+                title="${coords[0]},${coords[1]}">${markerText ?? '-'}</div>`;
+            }
+            
+            function clearAllHighlights() {
+                originTile = null;
+                destinationTile = null;
+                document.querySelectorAll('div.tile.highlight').forEach(
+                    (tile) => tile.classList.remove('highlight')
+                );
+                dotTimeoutTasks.forEach(
+                    (task) => clearTimeout(task)
+                );
+                dotTimeoutTasks = [];
+                document.querySelector('table#coords-table tbody').innerHTML = '';
             }
         </script>
     </head>
@@ -121,6 +152,17 @@
         </div>
         <div id="map">
         </div>
+        <table id="coords-table">
+            <thead>
+                <th>#</th>
+                <th>x</th>
+                <th>y</th>
+                <th>comment</th>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
         <script>
             renderMap(
               map,

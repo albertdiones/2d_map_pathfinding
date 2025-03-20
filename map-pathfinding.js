@@ -5,6 +5,15 @@ const WEST = 'west';
 
 let dotTimeoutTasks = [];
 
+function normalizeCoordinates(coords) {
+    const [x,y] = coords;
+    const factorDivisor = 100000;
+    return [
+        Math.round(x*factorDivisor)/factorDivisor,
+        Math.round(y*factorDivisor)/factorDivisor
+    ];
+}
+
 function findNextCoords(
     currentCoords, 
     toCoords,
@@ -14,6 +23,7 @@ function findNextCoords(
 ) {
 
 
+    // when the current coord is already on the same tile of the destination coords
     if (
         Math.floor(currentCoords[0]) === Math.floor(toCoords[0])
         && Math.floor(currentCoords[1]) === Math.floor(toCoords[1])
@@ -24,76 +34,79 @@ function findNextCoords(
     const trigoCoords = findTrigoNextCoords(previousCoords ?? originCoords, currentCoords, toCoords);
 
     if (!options.isPassable(...trigoCoords)) {
-        // find passable edge coords
-
-        const angle = getCoordsAngle(originCoords, toCoords);
-        const direction = getDirection(angle);
-        const directionsToTry = [
-            direction,
-            [direction[0], null],
-            ...(direction[1] ? [[direction[1], null]] : []),
-        ];
-        
-
-        if (direction.includes(NORTH)) {
-            directionsToTry.push([EAST,null]);
-            directionsToTry.push([WEST,null]);
-            directionsToTry.push([NORTH,WEST]);
-            directionsToTry.push([NORTH,EAST]);
-            directionsToTry.push([WEST,NORTH]);
-            directionsToTry.push([EAST,NORTH]);
-        }
+        return getPassableEdgeCoords(originCoords, currentCoords, toCoords, options);
+    }
+    //console.log('trigoCoords', trigoCoords);
+    return [...normalizeCoordinates(trigoCoords),"source: trigoCoords"];
+}
 
 
-        if (direction.includes(SOUTH)) {
-            directionsToTry.push([EAST,null]);
-            directionsToTry.push([WEST,null]);
-            directionsToTry.push([SOUTH,WEST]);
-            directionsToTry.push([SOUTH,EAST]);
-            directionsToTry.push([WEST,SOUTH]);
-            directionsToTry.push([EAST,SOUTH]);
-        }
-        
+function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
+    // find passable edge coords
+
+    const angle = getCoordsAngle(originCoords, toCoords);
+    const direction = getDirection(angle);
+    const directionsToTry = [
+        direction,
+        [direction[0], null],
+        ...(direction[1] ? [[direction[1], null]] : []),
+    ];
 
 
-        if (direction.includes(EAST)) {
-            directionsToTry.push([NORTH, null]);
-            directionsToTry.push([SOUTH, null]);
-            directionsToTry.push([EAST, NORTH]);
-            directionsToTry.push([EAST, SOUTH]);
-            directionsToTry.push([NORTH, EAST]);
-            directionsToTry.push([SOUTH, EAST]);
-        }
-        
-        if (direction.includes(WEST)) {
-            directionsToTry.push([NORTH, null]);
-            directionsToTry.push([SOUTH, null]);
-            directionsToTry.push([WEST, NORTH]);
-            directionsToTry.push([WEST, SOUTH]);
-            directionsToTry.push([NORTH, WEST]);
-            directionsToTry.push([SOUTH, WEST]);
-        }
+    if (direction.includes(NORTH)) {
+        directionsToTry.push([EAST,null]);
+        directionsToTry.push([WEST,null]);
+        directionsToTry.push([NORTH,WEST]);
+        directionsToTry.push([NORTH,EAST]);
+        directionsToTry.push([WEST,NORTH]);
+        directionsToTry.push([EAST,NORTH]);
+    }
 
-        const coordsCandidates = [];
 
-        for (const x in directionsToTry) {
-            const dir = directionsToTry[x];
-            const coords = getPassableEdgeOnDirection(
-                currentCoords,
-                dir, 
-                {isPassable: options.isPassable}
-            );
-            if (coords) {
-                console.log('scanCoords', coords, dir);
-                return coords;
-            }
-        }
-        if (!coordsCandidates.length) {
-            throw 'error!!!35353412';
+    if (direction.includes(SOUTH)) {
+        directionsToTry.push([EAST,null]);
+        directionsToTry.push([WEST,null]);
+        directionsToTry.push([SOUTH,WEST]);
+        directionsToTry.push([SOUTH,EAST]);
+        directionsToTry.push([WEST,SOUTH]);
+        directionsToTry.push([EAST,SOUTH]);
+    }
+
+
+
+    if (direction.includes(EAST)) {
+        directionsToTry.push([NORTH, null]);
+        directionsToTry.push([SOUTH, null]);
+        directionsToTry.push([EAST, NORTH]);
+        directionsToTry.push([EAST, SOUTH]);
+        directionsToTry.push([NORTH, EAST]);
+        directionsToTry.push([SOUTH, EAST]);
+    }
+
+    if (direction.includes(WEST)) {
+        directionsToTry.push([NORTH, null]);
+        directionsToTry.push([SOUTH, null]);
+        directionsToTry.push([WEST, NORTH]);
+        directionsToTry.push([WEST, SOUTH]);
+        directionsToTry.push([NORTH, WEST]);
+        directionsToTry.push([SOUTH, WEST]);
+    }
+
+    for (const x in directionsToTry) {
+        const dir = directionsToTry[x];
+        const coords = getPassableEdgeOnDirection(
+            currentCoords,
+            dir, 
+            {isPassable: options.isPassable}
+        );
+        if (coords) {
+            //console.log('scanCoords', coords, dir);
+            return [
+                ...normalizeCoordinates(coords),
+                `source: passable edge coords (${dir})`
+            ];
         }
     }
-    console.log('trigoCoords', trigoCoords);
-    return trigoCoords;
 }
 
 function getEdgeOnDirection(currentCoords, direction) {
@@ -124,20 +137,31 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     console.log('direction', direction);
     const currentTileEdge = getEdgeOnDirection(currentCoords, direction);
 
-    if (direction[0] === NORTH) {
+    
+    if (direction.includes(NORTH)) {
         currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
     }
-    else if (direction[0] === SOUTH) {
-        currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.00001
-    }    
-    else if (direction[0] === EAST) {
-        currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.00001
-    }    
-    else if (direction[0] === WEST) {
+    
+    if (direction.includes(SOUTH)) {
+        currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
+    }                
+    
+    if (direction.includes(EAST)) {
+        currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.99999
+    }
+    
+    if (direction.includes(WEST)) {
         currentTileEdge[0] = Math.floor(currentTileEdge[0]) - 1
     }
 
     return currentTileEdge;
+}
+
+function isCoordsEqual(coords1, coords2) {
+    const normalizedCoords1 = normalizeCoordinates(coords1);
+    const normalizedCoords2 = normalizeCoordinates(coords2);
+    return normalizedCoords1[0] === normalizedCoords2[0]
+        && normalizedCoords1[1] === normalizedCoords2[1];
 }
 
 function getPassableEdgeOnDirection(currentCoords, direction, options) {
@@ -145,8 +169,7 @@ function getPassableEdgeOnDirection(currentCoords, direction, options) {
     if (!options.isPassable(...coords)) {
         const withinTheTile = getEdgeOnDirection(currentCoords, direction);
         if (
-            withinTheTile[0] === currentCoords[0]
-            && withinTheTile[1] === currentCoords[1]
+            isCoordsEqual(withinTheTile, currentCoords)
         ) {
             return null;
         }
@@ -290,7 +313,7 @@ function findTrigoNextCoords(origin, current, destination) {
     const direction = getDirection(angle);
 
     if (direction[1] === null) {
-        return findImmediateNextCoords(current, destination);
+        return normalizeCoordinates(findImmediateNextCoords(current, destination));
     }
 
     let exit1 = [null, null];
@@ -340,7 +363,7 @@ function findTrigoNextCoords(origin, current, destination) {
     const exit2Distance = distance(origin, exit2);
 
 
-    return exit1Distance < exit2Distance ? exit1 : exit2;
+    return normalizeCoordinates(exit1Distance < exit2Distance ? exit1 : exit2);
 
 }
 
@@ -656,16 +679,18 @@ function showPath(fromElement, toElement, isPassable) {
 
     let i = 0;
     while (!arrived(current, to)) {
-        current = findNextCoords(
+        const [x,y,comment] = findNextCoords(
             current,
             to,
             previous,
             from,
             {isPassable: isPassable}
         );
+        current = [x,y];
         const tile = getTile(...current);
+        console.log('current 6434132', current);
         
-        animateHighlightTile(tile, {current: current, i: i})
+        animateHighlightTile(tile, {current: current, i: i, comment: comment})
 
         previous = current;
         i++;
@@ -674,25 +699,6 @@ function showPath(fromElement, toElement, isPassable) {
             break;
         }
     }
-}
-
-function placeDot(coords, markerText) {
-    const tile = getTile(...coords);
-    const x = coords[0] % 1;
-    const y = coords[1] % 1;
-    tile.innerHTML += `<div class="tile-dot" style="top: calc(${y*100}% - 1.5px); left: calc(${x*100}% - 1.5px)">${markerText ?? '-'}</div>`;
-}
-
-function clearAllHighlights() {
-    originTile = null;
-    destinationTile = null;
-    document.querySelectorAll('div.tile.highlight').forEach(
-        (tile) => tile.classList.remove('highlight')
-    );
-    dotTimeoutTasks.forEach(
-        (task) => clearTimeout(task)
-    );
-    dotTimeoutTasks = [];
 }
 
 function removeAllTileDots() {
