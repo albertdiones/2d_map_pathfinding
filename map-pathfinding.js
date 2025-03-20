@@ -363,7 +363,10 @@ function findTrigoNextCoords(origin, current, destination) {
 
 }
 
-
+// trigoCoords on the direction of the destination
+// within the current tile (not going outside)
+// so it's useful for getting the "collision coords"
+// "kung saan siya nauntog"
 function findTrigoNextCoords2(origin, current, destination) {
     const angle = getCoordsAngle(origin, destination);
 
