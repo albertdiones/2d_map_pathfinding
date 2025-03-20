@@ -103,12 +103,14 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
             //console.log('scanCoords', coords, dir);
             return [
                 ...normalizeCoordinates(coords),
-                `source: passable edge coords (${dir})`
+                `source: passable edge coords (${dir}) 
+                currentCoords ${currentCoords[0]},${currentCoords[1]}`
             ];
         }
     }
 }
 
+// gets the coordinates within the tile, that is on the direction provided
 function getEdgeOnDirection(currentCoords, direction) {
 
     const passableEdgeCoords = [...currentCoords];
@@ -138,19 +140,19 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     const currentTileEdge = getEdgeOnDirection(currentCoords, direction);
 
     
-    if (direction.includes(NORTH)) {
+    if (direction[0] === NORTH) {
         currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
     }
     
-    if (direction.includes(SOUTH)) {
+    if (direction[0] === SOUTH ) {
         currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
     }                
     
-    if (direction.includes(EAST)) {
+    if (direction[0] === EAST ) {
         currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.99999
     }
     
-    if (direction.includes(WEST)) {
+    if (direction[0] === WEST) {
         currentTileEdge[0] = Math.floor(currentTileEdge[0]) - 1
     }
 
@@ -167,13 +169,7 @@ function isCoordsEqual(coords1, coords2) {
 function getPassableEdgeOnDirection(currentCoords, direction, options) {
     const coords = getEdgeonAdjacentTile(currentCoords, direction);
     if (!options.isPassable(...coords)) {
-        const withinTheTile = getEdgeOnDirection(currentCoords, direction);
-        if (
-            isCoordsEqual(withinTheTile, currentCoords)
-        ) {
-            return null;
-        }
-        return withinTheTile;
+        return null;
     }
     return coords;
 }
