@@ -47,7 +47,7 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     const direction = getDirection(angle);
     const directionsToTry = [
         direction,
-        ...(direction[1] ? [direction[1], direction[0]] : []),
+        ...(direction[1] ? [[direction[1], direction[0]]] : []),
         [direction[0], null],
         ...(direction[1] ? [[direction[1], null]] : []),
     ];
@@ -91,6 +91,7 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
         directionsToTry.push([NORTH, WEST]);
         directionsToTry.push([SOUTH, WEST]);
     }
+    console.log('directionsToTry', directionsToTry);
 
     for (const x in directionsToTry) {
         const dir = directionsToTry[x];
