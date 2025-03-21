@@ -157,23 +157,21 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
         currentTileEdge[0] = Math.floor(currentTileEdge[0]) - 1
     }
 
-    /*
-
     if (direction[1] === NORTH) {
-        currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
+        //currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
     }
     
     if (direction[1] === SOUTH ) {
-        currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
+        //currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
     }                
     
     if (direction[1] === EAST ) {
-        currentTileEdge[1] = Math.ceil(currentTileEdge[0]) + 0.99999
+        //currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.99999
     }
     
     if (direction[1] === WEST) {
-        currentTileEdge[1] = Math.floor(currentTileEdge[0]) - 1
-    }*/
+        //currentTileEdge[1] = Math.floor(currentTileEdge[0]) - 1
+    }
 
     return currentTileEdge;
 }
@@ -187,72 +185,13 @@ function isCoordsEqual(coords1, coords2) {
 
 function getPassableEdgeOnDirection(currentCoords, direction, options) {
     const coords = getEdgeonAdjacentTile(currentCoords, direction);
+
     if (!options.isPassable(...coords)) {
         return null;
     }
     return coords;
 }
 
-function pickAdjacentTile(
-    currentCoords, 
-    toCoords,
-    options = {isPassable}
-) {
-    const adjacentTiles = getAdjacentTiles(...currentCoords.map(i => Math.floor(i)));
-
-    const passableAdjacentTiles = adjacentTiles.filter(
-        coords => options.isPassable(...coords) 
-        && isAdjacent(currentCoords, coords)
-    ).map(
-        coords => coords.map( j => j+0.5 ) // tile center
-    );
-    
-    const adjacentTile = passableAdjacentTiles.reduce(
-        (tile1, tile2, index) => {
-            const tile1DistanceToDestination = getDistance(
-                ...[
-                    ...tile1,
-                    toCoords[0],
-                    toCoords[1]
-                ]
-            );
-            const tile2DistanceToDestination = getDistance(
-                ...[
-                    ...tile2, 
-                    toCoords[0],
-                    toCoords[1]
-                ]
-            );
-            const currentToTile1 = getDistance(
-                ...[
-                    ...tile1,
-                    currentCoords[0],
-                    currentCoords[1]
-                ]
-            );
-
-            const currentToTile2 = getDistance(
-                ...[
-                    ...tile2, 
-                    currentCoords[0],
-                    currentCoords[1]
-                ]
-            );
-
-            const tile1Total = currentToTile1 + tile1DistanceToDestination;
-
-            const tile2Total = currentToTile2 + tile2DistanceToDestination;
-
-
-            if (tile1Total < tile2Total) {
-                return tile1;
-            }
-
-            return tile2;
-        },
-    );
-    return adjacentTile;   
-}
 /**
  * 
  * @param float[] [x,y] originCoords 
