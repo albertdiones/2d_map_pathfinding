@@ -47,6 +47,7 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     const direction = getDirection(angle);
     const directionsToTry = [
         direction,
+        [direction[1], direction[0]],
         [direction[0], null],
         ...(direction[1] ? [[direction[1], null]] : []),
     ];
@@ -154,6 +155,24 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     if (direction[0] === WEST) {
         currentTileEdge[0] = Math.floor(currentTileEdge[0]) - 1
     }
+
+    /*
+
+    if (direction[1] === NORTH) {
+        currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
+    }
+    
+    if (direction[1] === SOUTH ) {
+        currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
+    }                
+    
+    if (direction[1] === EAST ) {
+        currentTileEdge[1] = Math.ceil(currentTileEdge[0]) + 0.99999
+    }
+    
+    if (direction[1] === WEST) {
+        currentTileEdge[1] = Math.floor(currentTileEdge[0]) - 1
+    }*/
 
     return currentTileEdge;
 }
