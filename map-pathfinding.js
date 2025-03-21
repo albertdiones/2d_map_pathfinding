@@ -368,6 +368,35 @@ function findTrigoNextCoords(origin, current, destination) {
 
 }
 
+/**
+ * 
+ * @param float[] [x,y] originCoords 
+ * @param float[] [x,y] destinationCoords 
+ * @param Function ([x,y]) => boolean isPassable 
+ * @returns 
+ */
+function getPath(originCoords, destinationCoords, isPassable) {
+    const path = [originCoords];
+    let current = [...originCoords];
+
+    let i = 0;
+    while (!arrived(current, destinationCoords)) {
+        const [x,y,comment] = findNextCoords(
+            current,
+            destinationCoords,
+            originCoords,
+            {isPassable: isPassable}
+        );
+        current = [x,y];
+        path.push([x,y,comment]);
+
+        if (i > 50) {
+            break;
+        }
+    }
+    return path;
+}
+
 // trigoCoords on the direction of the destination
 // within the current tile (not going outside)
 // so it's useful for getting the "collision coords"
@@ -670,35 +699,7 @@ function _centerCoord(i) {
     }
     return i;
 }
-/**
- * 
- * @param float[] [x,y] originCoords 
- * @param float[] [x,y] destinationCoords 
- * @param Function ([x,y]) => boolean isPassable 
- * @returns 
- */
-function getPath(originCoords, destinationCoords, isPassable) {
-    const path = [originCoords];
-    let current = [...originCoords];
-    let previous = null;
 
-    let i = 0;
-    while (!arrived(current, destinationCoords)) {
-        const [x,y,comment] = findNextCoords(
-            current,
-            destinationCoords,
-            originCoords,
-            {isPassable: isPassable}
-        );
-        current = [x,y];
-        path.push([x,y,comment]);
-
-        if (i > 50) {
-            break;
-        }
-    }
-    return path;
-}
 
 function removeAllTileDots() {
     document.querySelectorAll('.tile-dot').forEach(
