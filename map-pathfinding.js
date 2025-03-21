@@ -234,13 +234,7 @@ function pickAdjacentTile(
     );
     return adjacentTile;   
 }
-/**
- * 
- * @param float[] [x,y] originCoords 
- * @param float[] [x,y] destinationCoords 
- * @param float[][] coordsCandidates 
- * @returns 
- */
+
 function getShortestPathToDestination(originCoords, destinationCoords, coordsCandidates) {
     return coordsCandidates.reduce(
         (tile1, tile2, index) => {
@@ -672,29 +666,38 @@ function _centerCoord(i) {
     return i;
 }
 
-function getPath(originCoords, destinationCoords, isPassable) {
-    const path = [originCoords];
-    let current = [...originCoords];
+function showPath(fromElement, toElement, isPassable) {
+    const from = centerCoords(getTileCoords(fromElement));
+    const to = centerCoords(getTileCoords(toElement));    
+
+    placeDot(from,'0');
+    placeDot(to,'x');
+
+    let current = [...from];
     let previous = null;
 
     let i = 0;
-    while (!arrived(current, destinationCoords)) {
+    while (!arrived(current, to)) {
         const [x,y,comment] = findNextCoords(
             current,
-            destinationCoords,
+            to,
             previous,
-            originCoords,
+            from,
             {isPassable: isPassable}
         );
-        previous = current;
         current = [x,y];
-        path.push([x,y,comment]);
+        const tile = getTile(...current);
+        console.log('current 6434132', current);
+        
+        animateHighlightTile(tile, {current: current, i: i, comment: comment})
 
+        previous = current;
+        i++;
+        document.querySelector('.path-count').innerHTML = i;
         if (i > 50) {
             break;
         }
     }
-    return path;
 }
 
 function removeAllTileDots() {

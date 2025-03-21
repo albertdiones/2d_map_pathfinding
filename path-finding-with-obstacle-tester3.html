@@ -130,24 +130,6 @@
                 );
                 dotTimeoutTasks = [];
                 document.querySelector('table#coords-table tbody').innerHTML = '';
-            }           
-
-            function showPath(fromElement, toElement, isPassable) {
-
-                
-                const from = centerCoords(getTileCoords(fromElement));
-                const to = centerCoords(getTileCoords(toElement));
-                
-                // array of coordinates to go through to get to the destination
-                const path = getPath(from,to,isPassable);
-
-                path.forEach(
-                    ([x,y,comment], i) => {                        
-                        const tile = getTile(x,y);
-                        animateHighlightTile(tile, {current: [x,y], i: i, comment: comment})
-                        document.querySelector('.path-count').innerHTML = i;
-                    }
-                );
             }
         </script>
     </head>
