@@ -47,7 +47,7 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     const direction = getDirection(angle);
     const directionsToTry = [
         direction,
-        [direction[1], direction[0]],
+        ...(direction[1] ? [direction[1], direction[0]] : []),
         [direction[0], null],
         ...(direction[1] ? [[direction[1], null]] : []),
     ];
