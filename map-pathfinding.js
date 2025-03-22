@@ -3,15 +3,24 @@ const SOUTH = 'south';
 const EAST = 'east';
 const WEST = 'west';
 
+const TILE_FAR_EDGE_OFFSET = 0.99999;
+const TILE_NEAR_EDGE_OFFSET = 0.00001;
+const INSIDE_TILE_COORDINATES_PRECISION = 5;
+const INSIDE_TILE_PRECISION_FACTOR_DIVISOR = Math.pow(10,INSIDE_TILE_COORDINATES_PRECISION);
+
 let dotTimeoutTasks = [];
 
 function normalizeCoordinates(coords) {
     const [x,y] = coords;
-    const factorDivisor = 100000;
     return [
-        Math.round(x*factorDivisor)/factorDivisor,
-        Math.round(y*factorDivisor)/factorDivisor
+        normalizeCoordinate(x),
+        normalizeCoordinate(y)
     ];
+}
+
+function normalizeCoordinate(coord) {
+    const factorDivisor = INSIDE_TILE_PRECISION_FACTOR_DIVISOR;
+    return Math.round(coord*factorDivisor)/factorDivisor;
 }
 
 function findNextCoords(
@@ -55,51 +64,30 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     const direction = getDirection(angle);
     const directionsToTry = [
         direction,
-        ...(direction[1] ? [[direction[1], direction[0]]] : []),
-        [direction[0], null],
-        ...(direction[1] ? [[direction[1], null]] : []),
     ];
 
 
     if (direction.includes(NORTH)) {
-        directionsToTry.push([EAST,null]);
-        directionsToTry.push([WEST,null]);
         directionsToTry.push([NORTH,WEST]);
         directionsToTry.push([NORTH,EAST]);
-        directionsToTry.push([WEST,NORTH]);
-        directionsToTry.push([EAST,NORTH]);
     }
 
 
     if (direction.includes(SOUTH)) {
-        directionsToTry.push([EAST,null]);
-        directionsToTry.push([WEST,null]);
         directionsToTry.push([SOUTH,WEST]);
         directionsToTry.push([SOUTH,EAST]);
-        directionsToTry.push([WEST,SOUTH]);
-        directionsToTry.push([EAST,SOUTH]);
     }
-
 
 
     if (direction.includes(EAST)) {
-        directionsToTry.push([NORTH, null]);
-        directionsToTry.push([SOUTH, null]);
         directionsToTry.push([EAST, NORTH]);
         directionsToTry.push([EAST, SOUTH]);
-        directionsToTry.push([NORTH, EAST]);
-        directionsToTry.push([SOUTH, EAST]);
     }
 
     if (direction.includes(WEST)) {
-        directionsToTry.push([NORTH, null]);
-        directionsToTry.push([SOUTH, null]);
         directionsToTry.push([WEST, NORTH]);
         directionsToTry.push([WEST, SOUTH]);
-        directionsToTry.push([NORTH, WEST]);
-        directionsToTry.push([SOUTH, WEST]);
     }
-    console.log('directionsToTry', directionsToTry);
 
     for (const x in directionsToTry) {
         const dir = directionsToTry[x];
@@ -109,7 +97,6 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
             {isPassable: options.isPassable}
         );
         if (coords) {
-            //console.log('scanCoords', coords, dir);
             return [
                 ...normalizeCoordinates(coords),
                 `source: passable edge coords (${dir}) 
@@ -190,7 +177,7 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     }
     
     if (direction[1] === SOUTH ) {
-        //currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
+        currentTileEdge[1] = Math.ceil(currentTileEdge[1]) + 0.99999
     }                
     
     if (direction[1] === EAST ) {
@@ -198,7 +185,7 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     }
     
     if (direction[1] === WEST) {
-        //currentTileEdge[1] = Math.floor(currentTileEdge[0]) - 1
+        currentTileEdge[0] = Math.floor(currentTileEdge[0]) - 1
     }
 
     return currentTileEdge;
@@ -211,13 +198,57 @@ function isCoordsEqual(coords1, coords2) {
         && normalizedCoords1[1] === normalizedCoords2[1];
 }
 
-function getPassableEdgeOnDirection(currentCoords, direction, options) {
-    const coords = getEdgeonAdjacentTile(currentCoords, direction);
-
-    if (!options.isPassable(...coords)) {
-        return null;
+function isCoordsOnEdgeOfDirection(coords, direction) {
+    if (direction.includes(NORTH)) {
+        if (normalizeCoordinate(coords[1] % 1) > TILE_NEAR_EDGE_OFFSET) {
+            return false;
+        }
     }
-    return coords;
+    if (direction.includes(SOUTH)) {
+        if (normalizeCoordinate(coords[1] % 1) < TILE_FAR_EDGE_OFFSET) {
+            return false;
+        }
+    }
+    if (direction.includes(EAST)) {
+        if (normalizeCoordinate(coords[0] % 1) < TILE_FAR_EDGE_OFFSET) {
+            return false;
+        }
+    }
+    if (direction.includes(WEST)) {
+        if (normalizeCoordinate(coords[0] % 1) > TILE_NEAR_EDGE_OFFSET) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function getPassableEdgeOnDirection(currentCoords, direction, options) {
+
+    if (!isCoordsOnEdgeOfDirection(currentCoords, direction)) {
+        // within the tile
+        return getEdgeOnDirection(
+            currentCoords,
+            direction
+        );
+    }
+    const directionsToTry = [
+        direction,
+        [direction[0], null],
+    ];
+    if (direction[1] !== null) {
+        directionsToTry.push(
+            [direction[1], null]
+        );
+    }
+
+    for (let direction of directionsToTry) {
+        const coords = getEdgeonAdjacentTile(currentCoords, direction);
+        console.log('coords', coords, direction);
+        if (options.isPassable(...coords)) {
+            return coords;
+        }
+    }
+    return null;
 }
 
 /**
@@ -368,12 +399,24 @@ function getPath(originCoords, destinationCoords, isPassable) {
 
     let i = 0;
     while (!arrived(current, destinationCoords)) {
-        const [x,y,comment] = findNextCoords(
+        const next = findNextCoords(
             current,
             destinationCoords,
             originCoords,
             {isPassable: isPassable}
         );
+
+        if (!next) {
+            console.error("Failed to get next coords");
+            break;
+        }
+
+        const [x,y,comment] = next;
+
+        if (isCoordsEqual([x,y], current)) {
+            console.error("Unit did not move from current coordinate", current);
+            break;
+        }
         current = [x,y];
         path.push([x,y,comment]);
 
