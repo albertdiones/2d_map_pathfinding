@@ -47,7 +47,8 @@ function findNextCoords(
             return passableEdgeCoords;
         }
         // third algorithm, rotating direction
-        throw "No coords found";
+        console.error( "No coords found");
+        return null;
     }
     //console.log('trigoCoords', trigoCoords);
     return [...normalizeCoordinates(trigoCoords),"source: trigoCoords"];
@@ -233,10 +234,26 @@ function getPassableEdgeOnDirection(currentCoords, direction, options) {
 
     if (!isCoordsOnEdgeOfDirection(currentCoords, direction)) {
         // within the tile
-        return getDirectionEdgeOnCurrentTile(
+        const nextCoords = getDirectionEdgeOnCurrentTile(
             currentCoords,
             direction
         );
+        /*
+        it should also check the other direction component
+        so for example, south east, it should check:
+        south east tile, south tile and east tile, to confirm that
+        the direction is a dead end
+        */
+        const nextNextCoords1 = getDirectionEdgeOnAdjacentTile(nextCoords, direction);
+        const nextNextCoords2 = getDirectionEdgeOnAdjacentTile(nextCoords, [direction[0],null]);
+        const nextNextCoords3 = getDirectionEdgeOnAdjacentTile(nextCoords, [direction[1],null]);
+        if ( options.isPassable(...nextNextCoords1)
+            || options.isPassable(...nextNextCoords2)
+            || options.isPassable(...nextNextCoords3)
+        ) {
+            return nextCoords;
+        }
+        return null;
     }
     const directionsToTry = [
         direction,
@@ -427,6 +444,7 @@ function getPath(originCoords, destinationCoords, isPassable) {
         current = [x,y];
         path.push([x,y,comment]);
 
+        i++;
         if (i > 50) {
             break;
         }
