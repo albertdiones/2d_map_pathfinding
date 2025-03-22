@@ -107,14 +107,15 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
 }
 
 /**
- * gets the coordinates within the tile, 
+ * gets the coordinates within the tile of currentCoords, 
  * based on the ${direction} provided
  * 
- * @param {*} currentCoords 
- * @param {*} direction 
- * @returns 
+ * @param float[] [x,y] currentCoords 
+ * @param string[] [NORTH|EAST|SOUTH|WEST, NORTH|EAST|SOUTH|WEST] direction 
+ *
+ * @returns float[] [x,y]
  */
-function getEdgeOnDirection(currentCoords, direction) {
+function getDirectionEdgeOnCurrentTile(currentCoords, direction) {
 
     const passableEdgeCoords = [...currentCoords];
 
@@ -147,13 +148,14 @@ function getEdgeOnDirection(currentCoords, direction) {
  * Yung pinakasagad na coordinates sa direction na nasa argument,
  * sa tile na nasa direction na nasa argument
  * 
- * @param {*} currentCoords 
- * @param {*} direction 
- * @returns 
+ * @param float[] [x,y] currentCoords 
+ * @param string[] [NORTH|EAST|SOUTH|WEST, NORTH|EAST|SOUTH|WEST] direction 
+ * 
+ * @returns float[] [x,y]
  */
-function getEdgeonAdjacentTile(currentCoords, direction) {
+function getDirectionEdgeOnAdjacentTile(currentCoords, direction) {
     
-    const currentTileEdge = getEdgeOnDirection(currentCoords, direction);
+    const currentTileEdge = getDirectionEdgeOnCurrentTile(currentCoords, direction);
 
     
     if (direction[0] === NORTH) {
@@ -226,7 +228,7 @@ function getPassableEdgeOnDirection(currentCoords, direction, options) {
 
     if (!isCoordsOnEdgeOfDirection(currentCoords, direction)) {
         // within the tile
-        return getEdgeOnDirection(
+        return getDirectionEdgeOnCurrentTile(
             currentCoords,
             direction
         );
@@ -242,7 +244,7 @@ function getPassableEdgeOnDirection(currentCoords, direction, options) {
     }
 
     for (let direction of directionsToTry) {
-        const coords = getEdgeonAdjacentTile(currentCoords, direction);
+        const coords = getDirectionEdgeOnAdjacentTile(currentCoords, direction);
         console.log('coords', coords, direction);
         if (options.isPassable(...coords)) {
             return coords;
