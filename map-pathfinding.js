@@ -67,26 +67,24 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     ];
 
 
-    if (direction[0] === (NORTH)) {
+    if (direction.includes(NORTH)) {
         directionsToTry.push([NORTH,WEST]);
         directionsToTry.push([NORTH,EAST]);
     }
 
 
-    if (direction[0] === (SOUTH)) {
+    if (direction.includes(SOUTH)) {
         directionsToTry.push([SOUTH,WEST]);
         directionsToTry.push([SOUTH,EAST]);
-        directionsToTry.push([NORTH, EAST]);
-        directionsToTry.push([NORTH, WEST]);
     }
 
 
-    if (direction[0] === (EAST)) {
+    if (direction.includes(EAST)) {
         directionsToTry.push([EAST, NORTH]);
         directionsToTry.push([EAST, SOUTH]);
     }
 
-    if (direction[0] === (WEST)) {
+    if (direction.includes(WEST)) {
         directionsToTry.push([WEST, NORTH]);
         directionsToTry.push([WEST, SOUTH]);
     }
@@ -230,21 +228,10 @@ function getPassableEdgeOnDirection(currentCoords, direction, options) {
 
     if (!isCoordsOnEdgeOfDirection(currentCoords, direction)) {
         // within the tile
-        const nextCoords = getDirectionEdgeOnCurrentTile(
+        return getDirectionEdgeOnCurrentTile(
             currentCoords,
             direction
         );
-        /*
-        it should also check the other direction component
-        so for example, south east, it should check:
-        south east tile, south tile and east tile, to confirm that
-        the direction is a dead end
-        *
-        const nextNextCoords = getDirectionEdgeOnAdjacentTile(nextCoords, direction);
-        if (options.isPassable(...nextNextCoords)) {
-            return nextCoords;
-        }*/
-        return nextCoords;
     }
     const directionsToTry = [
         direction,
@@ -435,7 +422,6 @@ function getPath(originCoords, destinationCoords, isPassable) {
         current = [x,y];
         path.push([x,y,comment]);
 
-        i++;
         if (i > 50) {
             break;
         }
