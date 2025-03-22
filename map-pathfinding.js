@@ -39,7 +39,15 @@ function findNextCoords(
     return [...normalizeCoordinates(trigoCoords),"source: trigoCoords"];
 }
 
-
+/**
+ * Finds the most optimal coordinates within the current tile 
+ * or the adjacent tile that is accesible by the unit
+ * and is passable (? or adjacent to a passable tile ?) 
+ *
+ * It checks multiple directions 
+ * prioritizing the original angle from origin to destination
+ * 
+ */
 function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     // find passable edge coords
 
@@ -111,7 +119,14 @@ function getPassableEdgeCoords(originCoords, currentCoords, toCoords, options) {
     }
 }
 
-// gets the coordinates within the tile, that is on the direction provided
+/**
+ * gets the coordinates within the tile, 
+ * based on the ${direction} provided
+ * 
+ * @param {*} currentCoords 
+ * @param {*} direction 
+ * @returns 
+ */
 function getEdgeOnDirection(currentCoords, direction) {
 
     const passableEdgeCoords = [...currentCoords];
@@ -136,8 +151,21 @@ function getEdgeOnDirection(currentCoords, direction) {
 
 }
 
+/**
+ * 
+ * Finds the ${direction} edge coordinates
+ * within the adjacent tile to the ${direction}
+ * from the ${currentCoords}
+ * 
+ * Yung pinakasagad na coordinates sa direction na nasa argument,
+ * sa tile na nasa direction na nasa argument
+ * 
+ * @param {*} currentCoords 
+ * @param {*} direction 
+ * @returns 
+ */
 function getEdgeonAdjacentTile(currentCoords, direction) {
-    console.log('direction', direction);
+    
     const currentTileEdge = getEdgeOnDirection(currentCoords, direction);
 
     
@@ -158,7 +186,7 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     }
 
     if (direction[1] === NORTH) {
-        //currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
+        currentTileEdge[1] = Math.floor(currentTileEdge[1]) - 1
     }
     
     if (direction[1] === SOUTH ) {
@@ -166,7 +194,7 @@ function getEdgeonAdjacentTile(currentCoords, direction) {
     }                
     
     if (direction[1] === EAST ) {
-        //currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.99999
+        currentTileEdge[0] = Math.ceil(currentTileEdge[0]) + 0.99999
     }
     
     if (direction[1] === WEST) {
