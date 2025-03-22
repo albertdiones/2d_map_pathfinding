@@ -42,7 +42,12 @@ function findNextCoords(
     const trigoCoords = findTrigoNextCoords(currentCoords ?? originCoords, currentCoords, toCoords);
 
     if (!options.isPassable(...trigoCoords)) {
-        return getPassableEdgeCoords(originCoords, currentCoords, toCoords, options);
+        const passableEdgeCoords = getPassableEdgeCoords(originCoords, currentCoords, toCoords, options);
+        if (passableEdgeCoords) {
+            return passableEdgeCoords;
+        }
+        // third algorithm, rotating direction
+        throw "No coords found";
     }
     //console.log('trigoCoords', trigoCoords);
     return [...normalizeCoordinates(trigoCoords),"source: trigoCoords"];
